@@ -1,26 +1,246 @@
-@import "tailwindcss";
+/* Fuente Outfit (Google Fonts) — debe ir antes de otras reglas */
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap");
+
+/* ==========================================================================
+   PMS Style Guide — Variables por defecto (acento se sobreescribe por URL)
+   ========================================================================== */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Acento por defecto (script/ThemeProvider sobrescriben desde ?accent=) */
+  --accent-color: #2f74df;
+  --accent-soft: rgba(47, 116, 223, 0.16);
+  --accent-strong: rgba(47, 116, 223, 0.28);
+  --accent-text: #ffffff;
+  --accent-contrast: #ffffff;
+  --accent: var(--accent-color);
+  --accent-hover: var(--accent-color);
+  --accent-light: var(--accent-soft);
+
+  /* Layout (PMS) */
+  --sidebar-width: 275px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-card: 11px;
+  --radius-modal: 16px;
+
+  /* Estados reserva (STATUS_COLORS todo.md) */
+  --status-pending: #eab308;
+  --status-confirmed: #22c55e;
+  --status-checked-in: #47c5ff;
+  --status-checked-out: #6b7280;
+  --status-cancelled: #ef4444;
+  --status-no-show: #f97316;
+
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+
+  --font-sans: "Outfit", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: "SF Mono", "Cascadia Code", "Consolas", monospace;
+
+  /* Valores por defecto (tema claro) cuando aún no hay clase en <html> (SSR / antes del script) */
+  --app-bg-color: #f3f4f6;
+  --bg-primary: #f3f4f6;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f1f3f5;
+  --bg-overlay: rgba(0, 0, 0, 0.35);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+  --border-default: rgba(0, 0, 0, 0.06);
+  --border-strong: rgba(148, 163, 184, 0.3);
+  --content-shell-bg: #ffffffad;
+  /* Panel scroll del AppShell (sólido, sin transparencia) */
+  --app-shell-content-bg: #fbfbfc;
+  --content-shell-border: #ededed;
+  --card-bg: #cacaca7d;
+  --card-border: #c8c8c8;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  --topbar-bg: #e9eae9;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Tema claro (PMS) */
+.app-theme-light {
+  --app-surface: rgba(255, 255, 255, 0.88);
+  --app-surface-glow: 0px 8px 20px rgba(0, 0, 0, 0.14);
+  --app-surface-border: rgba(0, 0, 0, 0.06);
+  --app-surface-overlay: inset 0 1px 0 0 rgba(255, 255, 255, 0.65), inset 0 0 0 1px rgba(255, 255, 255, 0.32);
+  --app-bg-color: #f3f4f6;
+  --app-bg-image: none;
+
+  --bg-primary: #f3f4f6;
+  --bg-surface: #ffffff;
+  --bg-surface-hover: #f1f3f5;
+  --bg-overlay: rgba(0, 0, 0, 0.35);
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+
+  --border-default: rgba(0, 0, 0, 0.06);
+  --border-strong: rgba(148, 163, 184, 0.3);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  --content-shell-bg: #ffffffad;
+  --app-shell-content-bg: #fbfbfc;
+  --content-shell-border: #ededed;
+  --card-bg: #cacaca7d;
+  --card-border: #c8c8c8;
+
+  --topbar-bg: #e9eae9;
+  --topbar-border: rgba(226, 232, 240, 0.9);
+  --topbar-text: #0f172a;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Tema oscuro (PMS) */
+.app-theme-dark {
+  --app-surface: rgba(20, 20, 25, 0.85);
+  --app-surface-glow: 0px 10px 22px rgba(0, 0, 0, 0.35);
+  --app-surface-border: rgba(255, 255, 255, 0.12);
+  --app-surface-overlay: inset 0 1px 0 0 rgba(255, 255, 255, 0.06), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --app-bg-color: #040508;
+  --app-bg-image: none;
+
+  --bg-primary: #040508;
+  --bg-surface: #1a1d26;
+  --bg-surface-hover: rgba(30, 35, 45, 0.9);
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-inverse: #ffffff;
+
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-strong: #303030;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35);
+
+  --content-shell-bg: #000000bf;
+  --app-shell-content-bg: #040508;
+  --content-shell-border: #202020cf;
+  --card-bg: #00000042;
+  --card-border: #303030;
+
+  --topbar-bg: rgba(18, 20, 28, 0.647);
+  --topbar-border: rgba(63, 63, 70, 0.7);
+  --topbar-text: #e2e8f0;
 }
 
+/* Base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background: var(--app-bg-color, var(--bg-primary));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+select,
+input,
+textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Scrollbars (PMS style-guide) */
+.app-theme-light::-webkit-scrollbar,
+.app-theme-light *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.app-theme-light::-webkit-scrollbar-track {
+  background: #f5faff;
+  border-radius: 4px;
+}
+.app-theme-light::-webkit-scrollbar-thumb {
+  background: #bfcedc;
+  border-radius: 4px;
+}
+.app-theme-light::-webkit-scrollbar-thumb:hover {
+  background: #aaccec;
+}
+
+.app-theme-dark::-webkit-scrollbar,
+.app-theme-dark *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.app-theme-dark::-webkit-scrollbar-track {
+  background: #1e293b;
+  border-radius: 4px;
+}
+.app-theme-dark::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+.app-theme-dark::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* ==============================
+   Animations & Transitions
+   ============================== */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulseRing {
+  0%   { box-shadow: 0 0 0 0 currentColor; }
+  70%  { box-shadow: 0 0 0 4px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }

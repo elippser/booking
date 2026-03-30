@@ -1,0 +1,124 @@
+.root {
+  max-width: 1100px;
+  margin: 0 auto;
+  animation: slideUp 0.3s ease-out;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.newBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+  background: var(--accent-color);
+  border: none;
+  color: var(--accent-contrast, #fff);
+  transition: transform 0.15s, box-shadow 0.2s;
+  letter-spacing: 0.01em;
+}
+
+.newBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px var(--accent-soft);
+}
+
+.newBtn:active {
+  transform: scale(0.97);
+}
+
+.error {
+  color: var(--danger);
+  margin-bottom: 12px;
+  font-size: 14px;
+  padding: 10px 14px;
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--danger);
+  animation: slideDown 0.2s ease-out;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
+  animation: fadeIn 0.35s ease-out;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.table th {
+  padding: 10px 14px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-strong);
+  background: var(--bg-surface);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.muted {
+  padding: 32px !important;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.footer {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ghost {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid var(--accent-color);
+  background: var(--accent-soft);
+  color: var(--accent-color);
+  transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+
+.ghost:hover {
+  background: var(--accent-strong);
+  box-shadow: 0 2px 8px var(--accent-soft);
+  transform: translateY(-1px);
+}
+
+.ghost:active {
+  transform: scale(0.97);
+}
+
+.ghost:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}

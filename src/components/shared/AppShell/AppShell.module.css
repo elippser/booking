@@ -1,0 +1,25 @@
+.shell {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--app-bg-color, var(--bg-primary));
+  --content-inline-pad: 10px;
+}
+
+.content {
+  position: relative;
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+  background: var(--app-shell-content-bg, var(--content-shell-bg));
+  color: var(--text-primary);
+  animation: slideUp 0.35s ease-out;
+}
+
+.contentBody {
+  padding: 10px;
+  box-sizing: border-box;
+}

@@ -1,0 +1,71 @@
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  width: 100%;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  padding: 7px 0 0 10px;
+  background: var(--topbar-bg, var(--content-shell-bg));
+  position: relative;
+  z-index: 0;
+  overflow: visible;
+}
+
+.tab {
+  position: relative;
+  padding: 5px 15px 8px 15px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: 10px 10px 0 0;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+}
+
+/*
+ * Tab activo estilo “browser tab” (curvas inferiores con ::before / ::after + box-shadow),
+ * misma idea que SubSiteViewSidebar .browserTab.
+ */
+.active {
+  --nav-tab-curve-fill: var(--app-shell-content-bg, var(--content-shell-bg));
+  color: var(--accent-color);
+  font-weight: 700;
+  background: var(--nav-tab-curve-fill);
+  border: none;
+  margin-bottom: -1px;
+  z-index: 2;
+  -webkit-backdrop-filter: blur(30px);
+  backdrop-filter: blur(30px);
+}
+
+:global(.app-theme-light) .active {
+  --nav-tab-curve-fill: #fbfbfc;
+  background: #fbfbfc;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.active::before,
+.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.active::before {
+  left: -18px;
+  box-shadow: 9px 9px 0 var(--nav-tab-curve-fill);
+}
+
+.active::after {
+  right: -18px;
+  box-shadow: -9px 9px 0 var(--nav-tab-curve-fill);
+}

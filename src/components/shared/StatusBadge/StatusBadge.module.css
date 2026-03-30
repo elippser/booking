@@ -1,0 +1,64 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: transform 0.15s;
+}
+
+.badge:hover {
+  transform: scale(1.04);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: pulseRing 2s ease-out infinite;
+}
+
+/* — Status colors — */
+
+.pending {
+  background: rgba(234, 179, 8, 0.14);
+  color: #a16207;
+}
+.pending .dot { background: var(--status-pending); color: var(--status-pending); }
+
+.confirmed {
+  background: rgba(34, 197, 94, 0.13);
+  color: #15803d;
+}
+.confirmed .dot { background: var(--status-confirmed); color: var(--status-confirmed); }
+
+.checkedIn {
+  background: rgba(71, 197, 255, 0.14);
+  color: #0369a1;
+}
+.checkedIn .dot { background: var(--status-checked-in); color: var(--status-checked-in); }
+
+.checkedOut {
+  background: rgba(107, 114, 128, 0.12);
+  color: #374151;
+}
+.checkedOut .dot { background: var(--status-checked-out); color: var(--status-checked-out); animation: none; }
+
+.cancelled {
+  background: rgba(239, 68, 68, 0.11);
+  color: #b91c1c;
+}
+.cancelled .dot { background: var(--status-cancelled); color: var(--status-cancelled); animation: none; }
+
+.noShow {
+  background: rgba(249, 115, 22, 0.13);
+  color: #c2410c;
+}
+.noShow .dot { background: var(--status-no-show); color: var(--status-no-show); animation: none; }
