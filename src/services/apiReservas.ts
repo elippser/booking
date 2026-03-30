@@ -7,9 +7,9 @@ import type {
   Reservation,
   ReservaFilters,
 } from "@/types/reservas";
+import { env } from "@/config/env";
 
-const BASE =
-  process.env.NEXT_PUBLIC_RESERVAS_API_BASE ?? "http://localhost:7070";
+const BASE = env.reservasApiBase;
 
 function headers(token: string) {
   return {
