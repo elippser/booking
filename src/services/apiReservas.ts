@@ -1,8 +1,12 @@
 import type {
   AvailabilityResult,
+  CalendarRow,
+  Category,
+  CreatePromoPayload,
   CreateRatePlanPayload,
   CreateReservationPayload,
   GuestSummary,
+  Promo,
   RatePlan,
   Reservation,
   ReservaFilters,
@@ -21,14 +25,21 @@ function headers(token: string) {
 async function request<T>(input: string, init: RequestInit): Promise<T> {
   const res = await fetch(input, init);
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    const msg =
+    const body = await res.json().catch(() => ({})) as {
+      message?: string;
+      error?: string;
+      details?: string[];
+    };
+    const base =
       typeof body.message === "string"
         ? body.message
         : typeof body.error === "string"
           ? body.error
           : `Error ${res.status}`;
-    throw new Error(msg);
+    const detail = Array.isArray(body.details) && body.details.length
+      ? ` ${body.details.join("; ")}`
+      : "";
+    throw new Error(`${base}${detail}`.trim());
   }
   if (res.status === 204) return undefined as T;
   const text = await res.text();
@@ -194,6 +205,84 @@ export async function deleteRatePlan(
   ratePlanId: string,
 ): Promise<void> {
   await request<void>(`${BASE}/api/v1/rate-plans/${ratePlanId}`, {
+    method: "DELETE",
+    headers: headers(token),
+  });
+}
+
+export async function listCategories(
+  token: string,
+  propertyId: string,
+): Promise<Category[]> {
+  const url = new URL(`${BASE}/api/v1/categories`);
+  url.searchParams.set("propertyId", propertyId);
+  return request<Category[]>(url.toString(), {
+    headers: headers(token),
+  });
+}
+
+export async function getAvailabilityCalendar(
+  token: string,
+  params: { propertyId: string; from: string; to: string },
+): Promise<CalendarRow[]> {
+  const url = new URL(`${BASE}/api/v1/availability/calendar`);
+  url.searchParams.set("propertyId", params.propertyId);
+  url.searchParams.set("from", params.from);
+  url.searchParams.set("to", params.to);
+  return request<CalendarRow[]>(url.toString(), {
+    headers: headers(token),
+  });
+}
+
+export async function listPromos(
+  token: string,
+  propertyId: string,
+): Promise<Promo[]> {
+  const url = new URL(`${BASE}/api/v1/promos`);
+  url.searchParams.set("propertyId", propertyId);
+  return request<Promo[]>(url.toString(), { headers: headers(token) });
+}
+
+export async function createPromo(
+  token: string,
+  payload: CreatePromoPayload,
+): Promise<Promo> {
+  return request<Promo>(`${BASE}/api/v1/promos`, {
+    method: "POST",
+    headers: headers(token),
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function updatePromo(
+  token: string,
+  promoId: string,
+  patch: Partial<CreatePromoPayload>,
+): Promise<Promo> {
+  return request<Promo>(`${BASE}/api/v1/promos/${promoId}`, {
+    method: "PATCH",
+    headers: headers(token),
+    body: JSON.stringify(patch),
+  });
+}
+
+export async function togglePromo(
+  token: string,
+  promoId: string,
+  isEnabled: boolean,
+): Promise<Promo> {
+  return request<Promo>(`${BASE}/api/v1/promos/${promoId}/toggle`, {
+    method: "PATCH",
+    headers: headers(token),
+    body: JSON.stringify({ isEnabled }),
+  });
+}
+
+export async function deletePromo(
+  token: string,
+  promoId: string,
+): Promise<void> {
+  await request<void>(`${BASE}/api/v1/promos/${promoId}`, {
     method: "DELETE",
     headers: headers(token),
   });

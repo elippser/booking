@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Laupser – Promociones v2</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117; --surface: #181c27; --surface2: #1e2333; --border: #2a2f42;
+    --accent: #4f6ef7; --green: #22c55e; --yellow: #f59e0b; --red: #ef4444;
+    --purple: #a855f7; --text: #e8eaf0; --muted: #6b7280; --radius: 10px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* HEADER */
+  .header { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .logo { font-size: 18px; font-weight: 600; letter-spacing: -.5px; }
+  .logo span { color: var(--accent); }
+  .header-right { display: flex; align-items: center; gap: 12px; }
+  .property-badge { background: var(--surface2); border: 1px solid var(--border); padding: 6px 14px; border-radius: 20px; font-size: 13px; color: var(--muted); }
+  .property-badge b { color: var(--text); }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg,var(--accent),#7c3aed); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #fff; }
+
+  /* TOOLBAR */
+  .toolbar { display: flex; align-items: center; gap: 12px; padding: 14px 32px; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .toolbar-title { font-size: 15px; font-weight: 600; }
+  .toolbar-sub { font-size: 12px; color: var(--muted); margin-left: 4px; }
+  .tabs { display: flex; gap: 4px; margin-left: 24px; }
+  .tab { padding: 6px 14px; font-size: 13px; font-weight: 500; color: var(--muted); cursor: pointer; border-radius: 8px; border: 1px solid transparent; transition: all .15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { background: var(--surface2); border-color: var(--border); color: var(--text); }
+  .btn-new { margin-left: auto; background: var(--accent); border: none; color: #fff; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans',sans-serif; transition: background .15s; }
+  .btn-new:hover { background: #3d5ce0; }
+
+  /* CONTENT */
+  .content { padding: 24px 32px; flex: 1; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ═══ LISTA ═══ */
+  .promos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px,1fr)); gap: 16px; }
+  .promo-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color .15s; }
+  .promo-card:hover { border-color: #3d4560; }
+  .promo-card.is-active { border-color: #1d4ed8; }
+
+  .promo-card-head { padding: 16px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid var(--border); gap: 12px; }
+  .promo-icon { width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .promo-info { flex: 1; min-width: 0; }
+  .promo-name { font-size: 15px; font-weight: 600; }
+  .promo-desc { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .promo-discount { text-align: right; flex-shrink: 0; }
+  .discount-val { font-family: 'DM Mono',monospace; font-size: 22px; font-weight: 500; line-height: 1; }
+  .discount-type { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .promo-body { padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .promo-tag { display: flex; align-items: center; gap: 5px; background: var(--surface2); border: 1px solid var(--border); padding: 4px 10px; border-radius: 20px; font-size: 11px; color: var(--muted); }
+  .promo-tag b { color: var(--text); }
+  .promo-tag .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .studio-tag { border-color: #3730a3; background: #1e1b4b; color: #818cf8; }
+
+  .promo-footer { padding: 10px 16px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .promo-status { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; padding: 3px 10px; border-radius: 20px; }
+  .status-active   { background: #14532d; color: var(--green); }
+  .status-inactive { background: var(--surface2); color: var(--muted); }
+  .status-scheduled{ background: #1e3a5f; color: #60a5fa; }
+  .status-expired  { background: #1f1f1f; color: var(--muted); }
+
+  .promo-actions { display: flex; gap: 6px; align-items: center; }
+  .btn-xs { font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: 'DM Sans',sans-serif; font-weight: 500; transition: all .15s; border: 1px solid var(--border); background: var(--surface2); color: var(--muted); }
+  .btn-xs:hover { color: var(--text); border-color: var(--text); }
+  .btn-xs.danger:hover { color: var(--red); border-color: var(--red); }
+  .btn-xs.studio { border-color: #3730a3; color: #818cf8; background: #1e1b4b; }
+  .btn-xs.studio:hover { border-color: #818cf8; }
+
+  .toggle { position: relative; width: 34px; height: 18px; cursor: pointer; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; inset: 0; background: var(--border); border-radius: 18px; transition: .2s; }
+  .slider::before { content: ''; position: absolute; width: 12px; height: 12px; border-radius: 50%; background: #fff; left: 3px; top: 3px; transition: .2s; }
+  input:checked + .slider { background: var(--green); }
+  input:checked + .slider::before { transform: translateX(16px); }
+
+  /* ═══ STEPPER ═══ */
+  .stepper-wrap { max-width: 720px; }
+
+  .stepper-header { display: flex; align-items: center; gap: 0; margin-bottom: 32px; }
+  .step-item { display: flex; align-items: center; gap: 10px; flex: 1; }
+  .step-item:last-child { flex: 0; }
+  .step-circle {
+    width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 600; color: var(--muted); flex-shrink: 0;
+    transition: all .2s; cursor: pointer;
+  }
+  .step-circle.done { background: var(--green); border-color: var(--green); color: #fff; }
+  .step-circle.current { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .step-label { font-size: 12px; color: var(--muted); }
+  .step-label.current { color: var(--text); font-weight: 500; }
+  .step-label.done { color: var(--green); }
+  .step-line { flex: 1; height: 1px; background: var(--border); margin: 0 12px; }
+  .step-line.done { background: var(--green); }
+
+  /* STEP PANELS */
+  .step-panel { display: none; }
+  .step-panel.active { display: block; }
+
+  /* forms */
+  .form-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .form-section-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin-bottom: 16px; }
+  .form-row { display: flex; gap: 12px; margin-bottom: 14px; }
+  .form-row:last-child { margin-bottom: 0; }
+  .form-group { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  label { font-size: 12px; font-weight: 500; color: var(--muted); }
+  input[type=text], input[type=number], input[type=date], select, textarea {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    padding: 9px 12px; border-radius: 8px; font-size: 13px; font-family: 'DM Sans',sans-serif;
+    outline: none; transition: border-color .15s; width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select option { background: var(--surface2); }
+  textarea { resize: vertical; min-height: 70px; }
+  .helper { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+  .type-selector { display: flex; gap: 8px; }
+  .type-opt { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; background: var(--surface2); text-align: center; transition: all .15s; }
+  .type-opt:hover { border-color: var(--accent); }
+  .type-opt.selected { border-color: var(--accent); background: #1a2550; }
+  .type-opt-icon { font-size: 20px; margin-bottom: 4px; }
+  .type-opt-label { font-size: 12px; font-weight: 500; }
+  .type-opt-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  .cat-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cat-pill { padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; transition: all .15s; color: var(--muted); }
+  .cat-pill:hover { border-color: var(--accent); color: var(--text); }
+  .cat-pill.selected { border-color: var(--accent); background: #1a2550; color: var(--accent); }
+
+  .restrictions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .restriction-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .restriction-label { font-size: 12px; font-weight: 500; }
+  .restriction-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .restriction-input { width: 70px; flex-shrink: 0; }
+
+  /* STEP ACTIONS */
+  .step-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-next { background: var(--accent); border: none; color: #fff; padding: 10px 24px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans',sans-serif; transition: background .15s; }
+  .btn-next:hover { background: #3d5ce0; }
+  .btn-back { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 10px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans',sans-serif; transition: all .15s; }
+  .btn-back:hover { color: var(--text); border-color: var(--text); }
+  .btn-save { background: var(--green); border: none; color: #fff; padding: 10px 24px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: 'DM Sans',sans-serif; transition: background .15s; }
+  .btn-save:hover { background: #16a34a; }
+
+  /* ═══ STUDIO STEP ═══ */
+  .studio-banner {
+    background: linear-gradient(135deg, #1e1b4b, #2e1065);
+    border: 1px solid #3730a3;
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 20px;
+  }
+  .studio-icon { font-size: 28px; }
+  .studio-banner-title { font-size: 15px; font-weight: 600; color: #c4b5fd; }
+  .studio-banner-sub { font-size: 12px; color: #7c3aed; margin-top: 3px; }
+
+  .studio-toggle-row {
+    display: flex; align-items: center; gap: 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px;
+  }
+  .studio-toggle-info { flex: 1; }
+  .studio-toggle-title { font-size: 14px; font-weight: 500; }
+  .studio-toggle-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+  .studio-editor { display: none; }
+  .studio-editor.visible { display: block; }
+
+  /* image uploader */
+  .img-upload {
+    border: 2px dashed var(--border); border-radius: var(--radius);
+    padding: 32px; text-align: center; cursor: pointer;
+    transition: border-color .15s; background: var(--surface2);
+  }
+  .img-upload:hover { border-color: var(--accent); }
+  .img-upload-icon { font-size: 28px; margin-bottom: 8px; }
+  .img-upload-label { font-size: 13px; font-weight: 500; }
+  .img-upload-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* web preview */
+  .web-preview-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden; margin-top: 16px;
+  }
+  .web-preview-label {
+    padding: 10px 14px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .5px; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .web-preview-label span { color: #818cf8; }
+  .web-preview-body { padding: 16px; }
+  .promo-web-card {
+    border-radius: 10px; overflow: hidden;
+    border: 1px solid var(--border); max-width: 320px;
+  }
+  .promo-web-img {
+    height: 140px; background: linear-gradient(135deg, #1e3a5f, #1e1b4b);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; position: relative;
+  }
+  .promo-web-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--accent); color: #fff;
+    font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500;
+    padding: 4px 10px; border-radius: 20px;
+  }
+  .promo-web-body { padding: 14px; background: var(--surface2); }
+  .promo-web-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .promo-web-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .promo-web-cta {
+    display: inline-block; margin-top: 10px;
+    background: var(--accent); color: #fff; padding: 7px 16px;
+    border-radius: 8px; font-size: 12px; font-weight: 500;
+  }
+
+  /* ═══ EDICION CARD ═══ */
+  .edit-modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.75); z-index: 200; align-items: center; justify-content: center; }
+  .edit-modal-overlay.open { display: flex; }
+  .edit-modal { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; width: 620px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; }
+  .edit-modal-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .edit-modal-title { font-size: 15px; font-weight: 600; }
+  .edit-tabs { display: flex; gap: 4px; }
+  .edit-tab { padding: 5px 12px; font-size: 12px; font-weight: 500; color: var(--muted); cursor: pointer; border-radius: 6px; border: 1px solid transparent; transition: all .15s; }
+  .edit-tab.active { background: var(--surface2); border-color: var(--border); color: var(--text); }
+  .edit-tab.studio-tab.active { background: #1e1b4b; border-color: #3730a3; color: #c4b5fd; }
+  .modal-close { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+  .edit-modal-body { padding: 20px; overflow-y: auto; flex: 1; }
+  .edit-panel { display: none; }
+  .edit-panel.active { display: block; }
+  .edit-modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">laupser<span>.</span></div>
+  <div class="header-right">
+    <div class="property-badge">Propiedad: <b>Hotel Boutique Alma</b></div>
+    <div class="avatar">JR</div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div><span class="toolbar-title">Promociones</span><span class="toolbar-sub">— Gestión y configuración</span></div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('lista')">Mis promos</div>
+    <div class="tab" onclick="switchTab('nueva')">Nueva promo</div>
+  </div>
+  <button class="btn-new" onclick="switchTab('nueva')">+ Nueva promoción</button>
+</div>
+
+<div class="content">
+
+  <!-- ══ LISTA ══ -->
+  <div class="panel active" id="tab-lista">
+    <div class="promos-grid">
+
+      <div class="promo-card is-active">
+        <div class="promo-card-head">
+          <div class="promo-icon" style="background:#78350f33">🌞</div>
+          <div class="promo-info">
+            <div class="promo-name">Temporada Alta Verano</div>
+            <div class="promo-desc">Precio diferencial para julio y agosto</div>
+          </div>
+          <div class="promo-discount">
+            <div class="discount-val" style="color:var(--yellow)">+30%</div>
+            <div class="discount-type">sobre precio base</div>
+          </div>
+        </div>
+        <div class="promo-body">
+          <div class="promo-tag"><div class="dot" style="background:var(--yellow)"></div>01 Jul – 31 Ago</div>
+          <div class="promo-tag">Todas las categorías</div>
+          <div class="promo-tag">Mín. 3 noches</div>
+          <div class="promo-tag studio-tag">✦ En web</div>
+        </div>
+        <div class="promo-footer">
+          <div class="promo-status status-scheduled">Programada</div>
+          <div class="promo-actions">
+            <button class="btn-xs studio" onclick="openEdit('studio')">✦ Studio</button>
+            <button class="btn-xs" onclick="openEdit('datos')">Editar</button>
+            <button class="btn-xs danger">Eliminar</button>
+            <label class="toggle"><input type="checkbox" checked><div class="slider"></div></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="promo-card is-active">
+        <div class="promo-card-head">
+          <div class="promo-icon" style="background:#1e3a5f33">🏷️</div>
+          <div class="promo-info">
+            <div class="promo-name">Descuento Redes Sociales</div>
+            <div class="promo-desc">Campaña Instagram · Código exclusivo</div>
+          </div>
+          <div class="promo-discount">
+            <div class="discount-val" style="color:var(--accent)">-15%</div>
+            <div class="discount-type">con código</div>
+          </div>
+        </div>
+        <div class="promo-body">
+          <div class="promo-tag"><div class="dot" style="background:var(--green)"></div>Activa</div>
+          <div class="promo-tag">Código: <b>INSTA15</b></div>
+          <div class="promo-tag">Double Vista Mar</div>
+          <div class="promo-tag studio-tag">✦ En web</div>
+        </div>
+        <div class="promo-footer">
+          <div class="promo-status status-active">Activa</div>
+          <div class="promo-actions">
+            <button class="btn-xs studio" onclick="openEdit('studio')">✦ Studio</button>
+            <button class="btn-xs" onclick="openEdit('datos')">Editar</button>
+            <button class="btn-xs danger">Eliminar</button>
+            <label class="toggle"><input type="checkbox" checked><div class="slider"></div></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="promo-card">
+        <div class="promo-card-head">
+          <div class="promo-icon" style="background:#450a0a33">🔒</div>
+          <div class="promo-info">
+            <div class="promo-name">Tarifa No Reembolsable</div>
+            <div class="promo-desc">Solo operativa · Sin presencia en web</div>
+          </div>
+          <div class="promo-discount">
+            <div class="discount-val" style="color:var(--red)">-10%</div>
+            <div class="discount-type">automática</div>
+          </div>
+        </div>
+        <div class="promo-body">
+          <div class="promo-tag"><div class="dot" style="background:var(--muted)"></div>Todo el año</div>
+          <div class="promo-tag">Todas las categorías</div>
+          <div class="promo-tag">Sin cancelación</div>
+        </div>
+        <div class="promo-footer">
+          <div class="promo-status status-inactive">Inactiva</div>
+          <div class="promo-actions">
+            <button class="btn-xs" onclick="openEdit('datos')">Editar</button>
+            <button class="btn-xs danger">Eliminar</button>
+            <label class="toggle"><input type="checkbox"><div class="slider"></div></label>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══ NUEVA PROMO (steps) ══ -->
+  <div class="panel" id="tab-nueva">
+    <div class="stepper-wrap">
+
+      <!-- STEPPER NAV -->
+      <div class="stepper-header">
+        <div class="step-item">
+          <div class="step-circle current" id="sc1">1</div>
+          <div class="step-label current" id="sl1">Datos operativos</div>
+        </div>
+        <div class="step-line" id="line1"></div>
+        <div class="step-item">
+          <div class="step-circle" id="sc2">2</div>
+          <div class="step-label" id="sl2">Precios y restricciones</div>
+        </div>
+        <div class="step-line" id="line2"></div>
+        <div class="step-item">
+          <div class="step-circle" id="sc3">3</div>
+          <div class="step-label" id="sl3">Studio (web)</div>
+        </div>
+      </div>
+
+      <!-- STEP 1: datos operativos -->
+      <div class="step-panel active" id="step1">
+        <div class="form-section">
+          <div class="form-section-title">Tipo de promoción</div>
+          <div class="type-selector">
+            <div class="type-opt selected" onclick="selectType(this,'auto')">
+              <div class="type-opt-icon">⚡</div>
+              <div class="type-opt-label">Automática</div>
+              <div class="type-opt-sub">Se aplica sola por fechas</div>
+            </div>
+            <div class="type-opt" onclick="selectType(this,'code')">
+              <div class="type-opt-icon">🏷️</div>
+              <div class="type-opt-label">Código de descuento</div>
+              <div class="type-opt-sub">El huésped ingresa un código</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Identificación</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre interno de la promo</label>
+              <input type="text" placeholder="Ej: Temporada Alta Verano 2025" />
+              <div class="helper">Solo visible para vos en el panel. El nombre público se configura en Studio.</div>
+            </div>
+          </div>
+          <div class="form-row" id="code-field" style="display:none">
+            <div class="form-group">
+              <label>Código de descuento</label>
+              <input type="text" placeholder="Ej: VERANO25" style="font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Vigencia desde</label>
+              <input type="date" />
+            </div>
+            <div class="form-group">
+              <label>Vigencia hasta</label>
+              <input type="date" />
+              <div class="helper">Dejá vacío para sin vencimiento.</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Categorías que aplica</div>
+          <div class="cat-pills">
+            <div class="cat-pill selected" onclick="togglePill(this)">Todas</div>
+            <div class="cat-pill" onclick="togglePill(this)">Double Vista Mar</div>
+            <div class="cat-pill" onclick="togglePill(this)">Double Jardín</div>
+            <div class="cat-pill" onclick="togglePill(this)">Suite Junior</div>
+            <div class="cat-pill" onclick="togglePill(this)">Standard</div>
+          </div>
+        </div>
+        <div class="step-actions">
+          <button class="btn-next" onclick="goStep(2)">Siguiente →</button>
+          <button class="btn-back" onclick="switchTab('lista')">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: precios y restricciones -->
+      <div class="step-panel" id="step2">
+        <div class="form-section">
+          <div class="form-section-title">Descuento</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tipo de descuento</label>
+              <select>
+                <option>Porcentaje (%)</option>
+                <option>Monto fijo ($)</option>
+                <option>Precio override (fijo por noche)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Valor</label>
+              <input type="number" placeholder="Ej: 20" />
+              <div class="helper">Ingresá solo el número sin símbolo.</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Restricciones opcionales</div>
+          <div class="restrictions-grid">
+            <div class="restriction-item">
+              <div>
+                <div class="restriction-label">Mínimo de noches</div>
+                <div class="restriction-sub">Aplica si reserva N noches o más</div>
+              </div>
+              <input class="restriction-input" type="number" placeholder="—" min="1" />
+            </div>
+            <div class="restriction-item">
+              <div>
+                <div class="restriction-label">Anticipación mínima</div>
+                <div class="restriction-sub">Días antes del check-in</div>
+              </div>
+              <input class="restriction-input" type="number" placeholder="—" min="0" />
+            </div>
+            <div class="restriction-item">
+              <div>
+                <div class="restriction-label">Máximo de usos</div>
+                <div class="restriction-sub">Límite total de reservas con esta promo</div>
+              </div>
+              <input class="restriction-input" type="number" placeholder="∞" min="1" />
+            </div>
+            <div class="restriction-item">
+              <div>
+                <div class="restriction-label">Un uso por huésped</div>
+                <div class="restriction-sub">Cada cuenta puede usarla una vez</div>
+              </div>
+              <label class="toggle" style="flex-shrink:0"><input type="checkbox"><div class="slider"></div></label>
+            </div>
+          </div>
+        </div>
+        <div class="step-actions">
+          <button class="btn-next" onclick="goStep(3)">Siguiente → Studio</button>
+          <button class="btn-back" onclick="goStep(1)">← Atrás</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Studio -->
+      <div class="step-panel" id="step3">
+        <div class="studio-banner">
+          <div class="studio-icon">✦</div>
+          <div>
+            <div class="studio-banner-title">Laupser Studio</div>
+            <div class="studio-banner-sub">Configurá cómo se verá esta promo en el sitio web del hotel</div>
+          </div>
+        </div>
+
+        <div class="studio-toggle-row">
+          <div class="studio-toggle-info">
+            <div class="studio-toggle-title">Mostrar esta promo en el sitio web</div>
+            <div class="studio-toggle-sub">Si está activo, el componente de promos la renderizará en la web con imagen y descripción</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="studio-toggle" onchange="toggleStudio(this)"><div class="slider"></div></label>
+        </div>
+
+        <div class="studio-editor" id="studio-editor">
+          <div class="form-section">
+            <div class="form-section-title">Contenido visual</div>
+            <div class="img-upload">
+              <div class="img-upload-icon">🖼️</div>
+              <div class="img-upload-label">Subir imagen de la promo</div>
+              <div class="img-upload-sub">JPG o PNG · Recomendado 800×400px</div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">Textos públicos</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Título público</label>
+                <input type="text" id="pub-title" placeholder="Ej: ¡Verano con todo!" oninput="updateWebPreview()" />
+                <div class="helper">Visible en la card de la web</div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Descripción pública</label>
+                <textarea id="pub-desc" placeholder="Ej: Reservá antes del 30 de junio y disfrutá del verano con un 20% de descuento en todas nuestras categorías." oninput="updateWebPreview()"></textarea>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Texto del badge</label>
+                <input type="text" id="pub-badge" placeholder="Ej: -20% OFF" oninput="updateWebPreview()" />
+                <div class="helper">Aparece sobre la imagen como etiqueta destacada</div>
+              </div>
+              <div class="form-group">
+                <label>Texto del botón CTA</label>
+                <input type="text" id="pub-cta" placeholder="Ej: Reservar ahora" oninput="updateWebPreview()" />
+              </div>
+            </div>
+          </div>
+
+          <div class="web-preview-wrap">
+            <div class="web-preview-label">Vista previa — <span>Componente en la web del hotel</span></div>
+            <div class="web-preview-body">
+              <div class="promo-web-card">
+                <div class="promo-web-img">
+                  🌞
+                  <div class="promo-web-badge" id="prev-badge">-20% OFF</div>
+                </div>
+                <div class="promo-web-body">
+                  <div class="promo-web-title" id="prev-title">Título de la promo</div>
+                  <div class="promo-web-desc" id="prev-desc">La descripción aparecerá acá tal como la escribís arriba.</div>
+                  <div class="promo-web-cta" id="prev-cta">Reservar ahora</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn-save" onclick="switchTab('lista')">✓ Guardar promoción</button>
+          <button class="btn-back" onclick="goStep(2)">← Atrás</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL DE EDICIÓN -->
+<div class="edit-modal-overlay" id="edit-modal" onclick="closeEditModal(event)">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <div class="edit-modal-title">Temporada Alta Verano</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="edit-tabs">
+          <div class="edit-tab active" id="et-datos" onclick="switchEditTab('datos')">Datos</div>
+          <div class="edit-tab studio-tab" id="et-studio" onclick="switchEditTab('studio')">✦ Studio</div>
+        </div>
+        <button class="modal-close" onclick="document.getElementById('edit-modal').classList.remove('open')">×</button>
+      </div>
+    </div>
+    <div class="edit-modal-body">
+
+      <!-- Edit: datos -->
+      <div class="edit-panel active" id="ep-datos">
+        <div class="form-section">
+          <div class="form-section-title">Identificación</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Nombre interno</label>
+              <input type="text" value="Temporada Alta Verano" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Vigencia desde</label>
+              <input type="date" value="2025-07-01" />
+            </div>
+            <div class="form-group">
+              <label>Vigencia hasta</label>
+              <input type="date" value="2025-08-31" />
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Descuento</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Tipo</label>
+              <select><option selected>Porcentaje (%)</option><option>Monto fijo ($)</option></select>
+            </div>
+            <div class="form-group">
+              <label>Valor</label>
+              <input type="number" value="30" />
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Categorías</div>
+          <div class="cat-pills">
+            <div class="cat-pill selected" onclick="togglePill(this)">Todas</div>
+            <div class="cat-pill" onclick="togglePill(this)">Double Vista Mar</div>
+            <div class="cat-pill" onclick="togglePill(this)">Double Jardín</div>
+            <div class="cat-pill" onclick="togglePill(this)">Suite Junior</div>
+            <div class="cat-pill" onclick="togglePill(this)">Standard</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit: Studio -->
+      <div class="edit-panel" id="ep-studio">
+        <div class="studio-banner">
+          <div class="studio-icon">✦</div>
+          <div>
+            <div class="studio-banner-title">Modo Studio</div>
+            <div class="studio-banner-sub">Solo editás la presentación visual. Los datos operativos están en la tab Datos.</div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Imagen</div>
+          <div class="img-upload">
+            <div class="img-upload-icon">🖼️</div>
+            <div class="img-upload-label">Reemplazar imagen</div>
+            <div class="img-upload-sub">JPG o PNG · 800×400px</div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Textos públicos</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Título público</label>
+              <input type="text" value="¡El verano más caliente!" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Descripción</label>
+              <textarea>Julio y agosto con hasta 30% de descuento en todas las categorías. Mínimo 3 noches.</textarea>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Badge</label>
+              <input type="text" value="-30% Verano" />
+            </div>
+            <div class="form-group">
+              <label>CTA</label>
+              <input type="text" value="Aprovechar oferta" />
+            </div>
+          </div>
+        </div>
+        <div class="web-preview-wrap">
+          <div class="web-preview-label">Vista previa — <span>Componente en la web del hotel</span></div>
+          <div class="web-preview-body">
+            <div class="promo-web-card">
+              <div class="promo-web-img">🌞<div class="promo-web-badge">-30% Verano</div></div>
+              <div class="promo-web-body">
+                <div class="promo-web-title">¡El verano más caliente!</div>
+                <div class="promo-web-desc">Julio y agosto con hasta 30% de descuento en todas las categorías. Mínimo 3 noches.</div>
+                <div class="promo-web-cta">Aprovechar oferta</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="edit-modal-footer">
+      <button class="btn-back" onclick="document.getElementById('edit-modal').classList.remove('open')">Cancelar</button>
+      <button class="btn-save">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentStep = 1;
+  let promoType = 'auto';
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach((t,i) => {
+      t.classList.toggle('active', ['lista','nueva'][i] === name);
+    });
+    document.querySelectorAll('.panel').forEach(p => {
+      p.classList.toggle('active', p.id === 'tab-' + name);
+    });
+    if (name === 'nueva') goStep(1);
+  }
+
+  function goStep(n) {
+    // mark done
+    for (let i = 1; i <= 3; i++) {
+      const circle = document.getElementById('sc' + i);
+      const label = document.getElementById('sl' + i);
+      const line = document.getElementById('line' + i);
+      circle.classList.remove('current','done');
+      label.classList.remove('current','done');
+      if (line) line.classList.remove('done');
+      if (i < n) { circle.classList.add('done'); circle.textContent = '✓'; label.classList.add('done'); if (line) line.classList.add('done'); }
+      else if (i === n) { circle.classList.add('current'); circle.textContent = i; label.classList.add('current'); }
+      else { circle.textContent = i; }
+    }
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('step' + n).classList.add('active');
+    currentStep = n;
+  }
+
+  function selectType(el, type) {
+    document.querySelectorAll('.type-opt').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    promoType = type;
+    document.getElementById('code-field').style.display = type === 'code' ? 'flex' : 'none';
+  }
+
+  function togglePill(el) {
+    const isAll = el.textContent.trim() === 'Todas';
+    const pills = el.closest('.cat-pills').querySelectorAll('.cat-pill');
+    if (isAll) {
+      pills.forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+    } else {
+      pills[0].classList.remove('selected');
+      el.classList.toggle('selected');
+    }
+  }
+
+  function toggleStudio(cb) {
+    const editor = document.getElementById('studio-editor');
+    editor.classList.toggle('visible', cb.checked);
+  }
+
+  function updateWebPreview() {
+    const title = document.getElementById('pub-title').value || 'Título de la promo';
+    const desc = document.getElementById('pub-desc').value || 'La descripción aparecerá acá tal como la escribís arriba.';
+    const badge = document.getElementById('pub-badge').value || '-% OFF';
+    const cta = document.getElementById('pub-cta').value || 'Reservar ahora';
+    document.getElementById('prev-title').textContent = title;
+    document.getElementById('prev-desc').textContent = desc;
+    document.getElementById('prev-badge').textContent = badge;
+    document.getElementById('prev-cta').textContent = cta;
+  }
+
+  function openEdit(tab) {
+    document.getElementById('edit-modal').classList.add('open');
+    switchEditTab(tab);
+  }
+
+  function switchEditTab(name) {
+    ['datos','studio'].forEach(t => {
+      document.getElementById('et-' + t).classList.toggle('active', t === name);
+      document.getElementById('ep-' + t).classList.toggle('active', t === name);
+    });
+  }
+
+  function closeEditModal(e) {
+    if (e.target.id === 'edit-modal') document.getElementById('edit-modal').classList.remove('open');
+  }
+</script>
+
+</body>
+</html>

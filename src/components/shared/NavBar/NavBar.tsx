@@ -9,6 +9,8 @@ const TABS = [
   { href: "/reservas", label: "Reservas" },
   { href: "/nueva", label: "Nueva reserva" },
   { href: "/tarifas", label: "Tarifas" },
+  { href: "/disponibilidad", label: "Disponibilidad" },
+  { href: "/promos", label: "Promociones" },
 ] as const;
 
 export default function NavBar() {

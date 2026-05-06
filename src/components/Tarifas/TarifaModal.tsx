@@ -16,6 +16,7 @@ interface Props {
   propertyId: string;
   categories: CategoryOption[];
   initial?: RatePlan | null;
+  presetCategoryId?: string;
   onClose: () => void;
   onSave: (payload: CreateRatePlanPayload) => Promise<void>;
   onUpdate: (
@@ -30,6 +31,7 @@ export default function TarifaModal({
   propertyId,
   categories,
   initial,
+  presetCategoryId,
   onClose,
   onSave,
   onUpdate,
@@ -46,11 +48,29 @@ export default function TarifaModal({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  /** Incluye la categoría del plan al editar aunque no esté en la lista reciente (p. ej. sin unidades). */
+  const categoryOptions = useMemo((): CategoryOption[] => {
+    const base = [...categories];
+    if (
+      mode === "edit" &&
+      initial &&
+      !base.some((c) => c.categoryId === initial.categoryId)
+    ) {
+      base.unshift({
+        categoryId: initial.categoryId,
+        label: initial.categoryName?.trim() || `Categoría (${initial.categoryId.slice(0, 8)}…)`,
+      });
+    }
+    return base;
+  }, [categories, mode, initial]);
+
   const fallbackCategory = useMemo(
-    () => categories[0]?.categoryId ?? "",
-    [categories],
+    () => categoryOptions[0]?.categoryId ?? "",
+    [categoryOptions],
   );
 
+  // Solo al abrir o cambiar modo/initial: no depender de `categories`/fallback
+  // para no borrar lo que el usuario escribió cuando la lista carga async.
   useEffect(() => {
     if (!open) return;
     setErr(null);
@@ -66,21 +86,53 @@ export default function TarifaModal({
       );
     } else {
       setName("");
-      setCategoryId(fallbackCategory);
+      setCategoryId(presetCategoryId ?? "");
       setStartDate("");
       setEndDate("");
       setPricePerNight("");
       setCurrency("USD");
       setMinNights("");
     }
-  }, [open, mode, initial, fallbackCategory]);
+  }, [open, mode, initial, presetCategoryId]);
+
+  useEffect(() => {
+    if (!open || mode !== "create") return;
+    if (categoryId.trim()) return;
+    if (fallbackCategory) setCategoryId(fallbackCategory);
+  }, [open, mode, categoryId, fallbackCategory]);
+
+  const selectValue = categoryId.trim() || fallbackCategory;
 
   if (!open) return null;
 
   const submit = async () => {
     const cat = categoryId.trim() || fallbackCategory;
-    if (!name.trim() || !cat || !startDate || !endDate) {
-      setErr("Completá nombre, categoría y fechas.");
+    if (!name.trim()) {
+      setErr("Ingresá el nombre del plan.");
+      return;
+    }
+    if (!cat) {
+      setErr(
+        categoryOptions.length === 0
+          ? "No hay categorías cargadas. Actualizá la página o creá categorías en habitaciones."
+          : "Elegí una categoría.",
+      );
+      return;
+    }
+    if (!startDate) {
+      setErr("Elegí la fecha de inicio.");
+      return;
+    }
+    if (!endDate) {
+      setErr("Elegí la fecha de fin.");
+      return;
+    }
+    if (startDate > endDate) {
+      setErr("La fecha de fin debe ser igual o posterior al inicio.");
+      return;
+    }
+    if (pricePerNight.trim() === "") {
+      setErr("Ingresá el precio por noche.");
       return;
     }
     const price = Number(pricePerNight);
@@ -150,13 +202,13 @@ export default function TarifaModal({
 
         <label className={styles.field}>
           <span>Categoría</span>
-          {categories.length > 0 ? (
+          {categoryOptions.length > 0 ? (
             <select
               className={styles.input}
-              value={categoryId || fallbackCategory}
+              value={selectValue}
               onChange={(e) => setCategoryId(e.target.value)}
             >
-              {categories.map((c) => (
+              {categoryOptions.map((c) => (
                 <option key={c.categoryId} value={c.categoryId}>
                   {c.label}
                 </option>
@@ -165,7 +217,7 @@ export default function TarifaModal({
           ) : (
             <input
               className={styles.input}
-              placeholder="categoryId"
+              placeholder="ID de categoría (pega el id si no cargó el listado)"
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
             />

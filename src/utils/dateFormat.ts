@@ -43,6 +43,16 @@ export function formatLongSpanishDate(d: Date): string {
   return `${wd} ${day} de ${month} de ${year}`;
 }
 
+/** "Mart 25 Abr" */
+export function formatShortSpanishDate(d: Date): string {
+  const wd = WEEKDAYS_ES[d.getDay()].slice(0, 4);
+  const day = d.getDate();
+  const month = MONTHS_ES[d.getMonth()].slice(0, 3);
+  return `${wd.charAt(0).toUpperCase()}${wd.slice(1)} ${day} ${
+    month.charAt(0).toUpperCase() + month.slice(1)
+  }`;
+}
+
 /** Rango corto tipo "1→5 abr" */
 export function formatShortStayRange(checkIn: string, checkOut: string): string {
   const a = new Date(checkIn.slice(0, 10) + "T12:00:00");

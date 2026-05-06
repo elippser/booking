@@ -43,6 +43,21 @@ export function useReservas(
     refetch();
   }, [refetch]);
 
+  useEffect(() => {
+    if (!token || !propertyId) return;
+    const id = setInterval(() => {
+      void refetch();
+    }, 30_000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refetch();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [token, propertyId, refetch]);
+
   const setStatus = useCallback(
     async (
       reservationId: string,

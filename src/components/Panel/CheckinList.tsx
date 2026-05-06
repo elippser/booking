@@ -1,91 +1,112 @@
 "use client";
 
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import StatusBadge from "@/components/shared/StatusBadge/StatusBadge";
 import type { Reservation, ReservationStatus } from "@/types/reservas";
 import { dateOnly } from "@/utils/dateFormat";
+import ResCard from "./ResCard";
 import styles from "./CheckinList.module.css";
+import resStyles from "./ResCard.module.css";
 
 interface Props {
   today: string;
-  items: Reservation[];
+  tomorrow: string;
+  todayLabel: string;
+  tomorrowLabel: string;
+  itemsToday: Reservation[];
+  itemsTomorrow: Reservation[];
+  countToday: number;
   onStatusChange: (
     reservationId: string,
-    status: ReservationStatus,
-    reason?: string,
+    status: ReservationStatus
   ) => Promise<void>;
   busyId: string | null;
 }
 
+function pickAction(
+  r: Reservation,
+  today: string,
+  busyId: string | null,
+  onStatusChange: Props["onStatusChange"]
+) {
+  if (dateOnly(r.checkIn) !== today) return undefined;
+  const busy = busyId === r.reservationId;
+  if (r.status === "pending") {
+    return {
+      label: busy ? "…" : "Confirmar",
+      disabled: busy,
+      onClick: () => void onStatusChange(r.reservationId, "confirmed"),
+    };
+  }
+  if (r.status === "confirmed") {
+    return {
+      label: busy ? "…" : "Check-in",
+      disabled: busy,
+      onClick: () => void onStatusChange(r.reservationId, "checked-in"),
+    };
+  }
+  return undefined;
+}
+
 export default function CheckinList({
   today,
-  items,
+  tomorrow,
+  todayLabel,
+  tomorrowLabel,
+  itemsToday,
+  itemsTomorrow,
+  countToday,
   onStatusChange,
   busyId,
 }: Props) {
-  const searchParams = useSearchParams();
-  const qs = searchParams.toString();
-  const suffix = qs ? `?${qs}` : "";
-
   return (
     <div className={styles.column}>
-      <h2 className={styles.heading}>Check-ins hoy ({items.length})</h2>
-      <ul className={styles.list}>
-        {items.length === 0 && (
-          <li className={styles.empty}>No hay check-ins programados para hoy.</li>
-        )}
-        {items.map((r) => {
-          const action =
-            dateOnly(r.checkIn) === today
-              ? r.status === "pending"
-                ? { label: "Confirmar", next: "confirmed" as const }
-                : r.status === "confirmed"
-                  ? { label: "Check-in", next: "checked-in" as const }
-                  : null
-              : null;
+      <div className={styles.colHeader}>
+        <span className={styles.colLabel}>Check-ins</span>
+        <span className={`${styles.colBadge} ${styles.green}`}>
+          {countToday} hoy
+        </span>
+      </div>
 
-          return (
+      <div className={resStyles.dateBox}>
+        <div className={resStyles.dateBoxLabel}>Hoy — {todayLabel}</div>
+      </div>
+
+      {itemsToday.length === 0 ? (
+        <div className={resStyles.empty}>
+          No hay check-ins programados para hoy.
+        </div>
+      ) : (
+        <ul className={resStyles.list}>
+          {itemsToday.map((r) => (
             <li key={r.reservationId}>
-              <Link
-                href={`/reservas/${r.reservationId}${suffix}`}
-                className={styles.card}
-              >
-                <div className={styles.row}>
-                  <span className={styles.code}>{r.reservationCode}</span>
-                  <StatusBadge status={r.status} />
-                </div>
-                <p className={styles.guest}>
-                  {r.guest
-                    ? `${r.guest.firstName} ${r.guest.lastName}`
-                    : "Huésped"}
-                </p>
-                <p className={styles.meta}>
-                  {r.categoryName ?? "Categoría"} · {r.adults} adulto
-                  {r.adults !== 1 ? "s" : ""}
-                  {r.children > 0
-                    ? ` · ${r.children} niño${r.children !== 1 ? "s" : ""}`
-                    : ""}
-                </p>
-                {action && (
-                  <button
-                    type="button"
-                    className={styles.btn}
-                    disabled={busyId === r.reservationId}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      void onStatusChange(r.reservationId, action.next);
-                    }}
-                  >
-                    {busyId === r.reservationId ? "…" : action.label}
-                  </button>
-                )}
-              </Link>
+              <ResCard
+                reservation={r}
+                variant="checkin"
+                rightAction={pickAction(r, today, busyId, onStatusChange)}
+              />
             </li>
-          );
-        })}
-      </ul>
+          ))}
+        </ul>
+      )}
+
+      <div className={resStyles.dateBox}>
+        <div className={resStyles.dateBoxLabel}>Mañana — {tomorrowLabel}</div>
+      </div>
+
+      {itemsTomorrow.length === 0 ? (
+        <div className={resStyles.empty}>Sin check-ins para mañana.</div>
+      ) : (
+        <ul className={resStyles.list}>
+          {itemsTomorrow.map((r) => (
+            <li key={r.reservationId}>
+              <ResCard
+                reservation={r}
+                variant="checkin"
+                rightAction={pickAction(r, tomorrow, busyId, onStatusChange)}
+              />
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

@@ -120,6 +120,99 @@ export interface AvailabilityResult {
   currency?: string;
 }
 
+export interface Category {
+  categoryId: string;
+  name: string;
+  description?: string;
+  photos?: string[];
+  capacity?: { adults: number; children: number };
+  amenities?: string[];
+  basePrice?: { amount: number; currency: string };
+  unitCount?: number;
+}
+
+export interface CalendarDay {
+  date: string;
+  availableUnits: number;
+}
+
+export interface CalendarRow {
+  categoryId: string;
+  name: string;
+  totalUnits: number;
+  days: CalendarDay[];
+}
+
+export type PromoType = "auto" | "code";
+export type PromoDiscountType = "percentage" | "fixed_amount" | "price_override";
+export type PromoStatus = "active" | "scheduled" | "expired" | "inactive";
+
+export interface PromoStudio {
+  showInWeb: boolean;
+  image?: string;
+  title?: string;
+  description?: string;
+  badge?: string;
+  cta?: string;
+}
+
+export interface Promo {
+  promoId: string;
+  propertyId: string;
+  name: string;
+  description?: string;
+  type: PromoType;
+  code?: string;
+  startDate?: string;
+  endDate?: string;
+  appliesToAllCategories: boolean;
+  categoryIds: string[];
+  discountType: PromoDiscountType;
+  discountValue: number;
+  currency?: string;
+  minNights?: number;
+  minAdvanceDays?: number;
+  maxUses?: number;
+  oneUsePerGuest: boolean;
+  isEnabled: boolean;
+  studio: PromoStudio;
+  status: PromoStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreatePromoPayload {
+  propertyId: string;
+  name: string;
+  description?: string;
+  type: PromoType;
+  code?: string;
+  startDate?: string;
+  endDate?: string;
+  appliesToAllCategories: boolean;
+  categoryIds: string[];
+  discountType: PromoDiscountType;
+  discountValue: number;
+  currency?: string;
+  minNights?: number;
+  minAdvanceDays?: number;
+  maxUses?: number;
+  oneUsePerGuest?: boolean;
+  isEnabled?: boolean;
+  studio?: PromoStudio;
+}
+
+export interface AppliedPromoSummary {
+  promoId: string;
+  name: string;
+  discountType: PromoDiscountType;
+  discountValue: number;
+  deltaPerNight: number;
+  deltaTotal: number;
+  deltaPercent?: number;
+  code?: string;
+}
+
 export interface CreateReservationPayload {
   propertyId: string;
   categoryId: string;
